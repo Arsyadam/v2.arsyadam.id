@@ -1,9 +1,16 @@
 import { getAllProjects } from "../utils/showcase";
 import ProjectCard from "./components/ProjectCard";
 import { Sparkles, Code, Palette } from "lucide-react";
+// import { Showcase } from "../types/index"; 
+interface ProjectData {
+    slug: string;
+    title?: string;
+    completionDate?: string;
+    [key: string]: unknown; // For other frontmatter fields
+}
 
 export default async function ShowcasePage() {
-  const projects = getAllProjects();
+  const projects: ProjectData[] = getAllProjects();
 
   return (
     <div className="flex flex-col items-center justify-center text-center max-w-5xl mx-auto pt-15 md:pt-45 px-4 ">
@@ -42,11 +49,10 @@ export default async function ShowcasePage() {
           <span className="text-sm font-medium">Innovative Solutions</span>
         </div>
       </div>
-
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {projects.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
-        ))}
+        {projects.map((project) => {
+          return <ProjectCard key={project.slug} project={project} />;
+        })}
       </div>
     </div>
   );

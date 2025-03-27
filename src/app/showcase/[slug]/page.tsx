@@ -1,45 +1,44 @@
-import { notFound } from "next/navigation";
-import { getProjectBySlug, getProjectSlugs } from "../lib/showcase";
+"use client";
+import { notFound, useParams } from "next/navigation";
+import { getProjectBySlug } from "../lib/showcase";
 import ProjectDetail from "../components/ProjectDetail";
 import Link from "next/link";
-// Generate static paths for all projects
-export async function generateStaticParams() {
-  const slugs = getProjectSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+
+// export function generateStaticParams() {
+//   const slugs = getProjectSlugs();
+//   return slugs.map((slug) => ({ slug }));
+// }
 
 // Generate metadata for each project page
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const project = getProjectBySlug(params.slug);
+// export async function generateMetadata({
+//   params,
+// }: {
+//   params: { slug: string };
+// }) {
+//   const project = getProjectBySlug(params.slug);
 
-  if (!project) {
-    return {
-      title: "Project Not Found",
-      description: "The requested project could not be found.",
-    };
-  }
+//   if (!project) {
+//     return {
+//       title: "Project Not Found",
+//       description: "The requested project could not be found.",
+//     };
+//   }
 
-  return {
-    title: `${project.title} | Arsyadam's Portfolio`,
-    description: project.description,
-    openGraph: {
-      title: `${project.title} | Arsyadam's Portfolio`,
-      description: project.description,
-      images: [{ url: project.image }],
-    },
-  };
-}
+//   return {
+//     title: `${project.title} | Arsyadam's Portfolio`,
+//     description: project.description,
+//     openGraph: {
+//       title: `${project.title} | Arsyadam's Portfolio`,
+//       description: project.description,
+//       images: [{ url: project.image }],
+//     },
+//   };
+// }
 
-export default function ProjectDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const project = getProjectBySlug(params.slug);
+export default function ProjectDetailPage() {
+  const params = useParams();
+  const { slug } = params;
+  const project = getProjectBySlug(slug);
 
   if (!project) {
     notFound();

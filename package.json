@@ -11,9 +11,11 @@
   "dependencies": {
     "@uiw/react-md-editor": "^4.0.5",
     "framer-motion": "^12.5.0",
+    "fs": "^0.0.1-security",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.483.0",
     "next": "15.2.3",
+    "path": "^0.12.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "remark": "^15.0.1",
