@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL;
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://ollama.arsyadam.id";
 
 const uptimeData = {
   startTime: Date.now(),

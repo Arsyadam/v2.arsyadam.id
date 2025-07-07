@@ -9,7 +9,7 @@ url: "https://moklet.org"
 github: "https://github.com/arsyadam/moklet.org"
 ---
 
-Moklet.org is an open-source information portal dedicated to showcasing the activities and innovations of the organizations and sub-organizations within SMK Telkom Malang, commonly known as Moklet. The platform serves as a central hub for students and faculty to stay informed about the latest news and events related to the school's various organizations. citeturn0search0
+Moklet.org is an open-source information portal dedicated to showcasing the activities and innovations of the organizations and sub-organizations within SMK Telkom Malang, commonly known as Moklet. The platform serves as a central hub for students and faculty to stay informed about the latest news and events related to the school's var   ious organizations. citeturn0search0
 
 **Key Features of Moklet.org:**
 
