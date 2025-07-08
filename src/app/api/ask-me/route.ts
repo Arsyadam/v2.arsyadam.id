@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "https://ollama.arsyadam.id"
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "tinyllama:latest"
-const OLLAMA_TIMEOUT_MS = 30000
+const OLLAMA_TIMEOUT_MS = 9000
 
 // Context about Arsyadam for the AI to reference
 const CONTEXT = `
@@ -121,9 +121,10 @@ async function queryOllama(question: string): Promise<OllamaResult> {
         prompt: `${CONTEXT}\n\nQuestion: ${question}\n\nAnswer:`,
         stream: false,
         options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          num_predict: 500,
+          temperature: 0.6,
+          top_p: 0.8,
+          num_predict: 200,
+          max_tokens: 200,
         },
       }),
       signal: controller.signal,
