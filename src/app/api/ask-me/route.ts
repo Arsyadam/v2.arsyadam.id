@@ -125,6 +125,7 @@ async function queryOllama(question: string): Promise<OllamaResult> {
           top_p: 0.8,
           num_predict: 200,
           max_tokens: 200,
+          stop: ["\n", "Question:", "Answer:"],
         },
       }),
       signal: controller.signal,
