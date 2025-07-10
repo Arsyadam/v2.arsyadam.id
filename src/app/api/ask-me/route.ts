@@ -113,18 +113,18 @@ async function queryOllama(question: string): Promise<OllamaResult> {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
       },
       body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        prompt: `${CONTEXT}\n\nQuestion: ${question}\n\nAnswer:`,
-        stream: false,
-        options: {
-          temperature: 0.6,
-          top_p: 0.8,
-          num_predict: 100,
-        },
+      model: OLLAMA_MODEL,
+      prompt: `${CONTEXT}\n\nQuestion: ${question}\n\n`,
+      stream: false,
+      options: {
+        temperature: 0.6,
+        top_p: 0.8,
+        num_predict: 100,
+      },
       }),
       signal: controller.signal,
     })
