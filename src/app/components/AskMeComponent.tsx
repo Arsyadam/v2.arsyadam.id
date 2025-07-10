@@ -112,7 +112,7 @@ export default function AskMeComponent() {
               }`}
             >
               <div
-                className={`max-w-[80%]  p-3 rounded-lg ${
+                className={`max-w-[80%] p-3 rounded-lg ${
                   message.type === "user"
                     ? "bg-red-600 text-end text-white"
                     : "bg-white text-start text-gray-800 border"
@@ -121,7 +121,15 @@ export default function AskMeComponent() {
                 <div
                   className="text-sm"
                   dangerouslySetInnerHTML={{
-                    __html: message.content.replace(/\n/g, "<br/>"),
+                    __html: message.content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                      .replace(/`(.*?)`/g, "<code>$1</code>")
+                      .replace(
+                        /\[([^\]]+)\]\(([^)]+)\)/g,
+                        '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-red-500 underline">$1</a>'
+                      ),
                   }}
                 />
                 {message.note && (
