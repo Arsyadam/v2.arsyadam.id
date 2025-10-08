@@ -308,13 +308,93 @@ export default function Home() {
                   <div className="absolute w-5 h-5 mt-2 bg-white rounded-full  -left-2.5 border-3 border-slate-300"></div>
                   <div className="pb-3">
                     <div className="text-gray-400 mb-1 pt-2">2024 - 2025</div>
-                    <h3 className="font-medium text-xl sm:text-2xl">
-                      General Manager of Metic Merch
-                    </h3>
-                    <p className="text-gray-700 text-xs sm:text-sm max-w-xl mt-1">
-                      overseeing production, sales, and strategy to drive
-                      revenue and quality.
-                    </p>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-xl sm:text-2xl">
+                          General Manager of Metic Merch
+                        </h3>
+                        <p className="text-gray-700 text-xs sm:text-sm max-w-xl mt-1">
+                          overseeing production, sales, and strategy to drive
+                          revenue and quality.
+                        </p>
+                        <Link
+                          href="https://metic.moklet.org"
+                          className="group inline-flex items-center h-9 rounded-full text-sm font-semibold whitespace-nowrap px-3 focus:outline-none focus:ring-2 bg-red-50 text-red-600 hover:bg-red-200 hover:text-red-700 focus:ring-red-500 mt-2"
+                        >
+                          metic.moklet.org
+                          <svg
+                            className="overflow-visible ml-3 text-red-300 group-hover:text-red-400"
+                            width="3"
+                            height="6"
+                            viewBox="0 0 3 6"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M0 0L3 3L0 6"></path>
+                          </svg>
+                        </Link>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Image
+                          src="https://res.cloudinary.com/mokletorg/image/upload/v1721611310/app_media/file_u6zi7e.png"
+                          alt="Metic Merch Logo"
+                          width={70}
+                          height={70}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li className="mb-6 md:mb-10 ml-8">
+                  <div className="absolute w-5 h-5 mt-2 bg-white rounded-full  -left-2.5 border-3 border-slate-300"></div>
+                  <div className="pb-3">
+                    <div className="text-gray-400 mb-1 pt-2">
+                      Nov 2025 - April 2026
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-xl sm:text-2xl">
+                          AI Engineer Intern at dot.co.id
+                        </h3>
+                        <p className="text-gray-700 text-xs sm:text-sm max-w-xl mt-1">
+                          responsible for developing and implementing AI
+                          solutions to enhance business processes and customer
+                          experiences.
+                        </p>
+                        <Link
+                          href="https://dot.co.id"
+                          className="group inline-flex items-center h-9 rounded-full text-sm font-semibold whitespace-nowrap px-3 focus:outline-none focus:ring-2 bg-red-50 text-red-600 hover:bg-red-200 hover:text-red-700 focus:ring-red-500 mt-2"
+                        >
+                          dot.co.id
+                          <svg
+                            className="overflow-visible ml-3 text-red-300 group-hover:text-red-400"
+                            width="3"
+                            height="6"
+                            viewBox="0 0 3 6"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M0 0L3 3L0 6"></path>
+                          </svg>
+                        </Link>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Image
+                          src="https://assets.cdn.dicoding.com/original/jobs/dos:lowongan_dicoding_pt_digdaya_olah_teknologi_indonesia_260322191647.png"
+                          alt="dot.co.id Logo"
+                          width={70}
+                          height={70}
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </li>
               </ol>
