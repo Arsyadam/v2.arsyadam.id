@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://ollama.arsyadam.id";
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "https://chat.arsyadam.id/ollama";
+const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || "sk-0a51fac465b74368a777e331a1b3b074";
 
 const uptimeData = {
   startTime: Date.now(),
@@ -18,7 +19,9 @@ export async function GET() {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/tags`, {
       method: "GET",
       headers: {
-        Accept: "application/json",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${OLLAMA_API_KEY}`, // Fixed to use the variable
       },
       signal: controller.signal,
     });

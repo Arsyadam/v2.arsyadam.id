@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "https://ollama.arsyadam.id"
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "tinyllama:latest"
-const OLLAMA_TIMEOUT_MS = 9000
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "https://chat.arsyadam.id/ollama"
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "deepseek-v2:latest"
+const OLLAMA_TIMEOUT_MS = 30000
+const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || "sk-0a51fac465b74368a777e331a1b3b074";
 
 // Context about Arsyadam for the AI to reference
 const CONTEXT = `
@@ -113,20 +114,21 @@ async function queryOllama(question: string): Promise<OllamaResult> {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${OLLAMA_API_KEY}`, // Fixed to use the variable
       },
       body: JSON.stringify({
-        model: OLLAMA_MODEL,
-         prompt: `${CONTEXT}\n\nQuestion: ${question}\n\nProvide a direct, concise answer (maximum 200 tokens). Format the answer using Markdown with headings, bold, italic, and emojis where appropriate. End with a complete thought:`,
-        stream: false,
-        options: {
-          temperature: 0.6,
-          top_p: 0.8,
-          num_predict: 200,
-          stop_sequences: [".", "!", "?"],
-          stop_on_eos: true
-        },
+      model: OLLAMA_MODEL,
+      prompt: `${CONTEXT}\n\nQuestion: ${question}\n\nProvide a direct, concise answer (maximum 200 tokens). Format the answer using Markdown with headings, bold, italic, and emojis where appropriate. End with a complete thought:`,
+      stream: false,
+      options: {
+        temperature: 0.2,
+        top_p: 0.8,
+        num_predict: 200,
+        stop_sequences: [".", "!", "?"],
+        stop_on_eos: true
+      },
       }),
       signal: controller.signal,
     })
@@ -149,6 +151,17 @@ async function queryOllama(question: string): Promise<OllamaResult> {
 }
 
 export async function POST(request: NextRequest) {
+  // Only validate API key in production environments
+  if (process.env.NODE_ENV === "production") {
+    if (!OLLAMA_API_KEY) {
+      return NextResponse.json({ error: "API key not set on server" }, { status: 500 });
+    }
+    const apiKey = request.headers.get("x-api-key");
+    if (apiKey !== OLLAMA_API_KEY) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+  // --- end API Key check ---
   try {
     // Parse request body
     let body: { question?: string }

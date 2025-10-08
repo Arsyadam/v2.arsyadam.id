@@ -16,9 +16,8 @@ function Experience() {
         width="56"
         height="56"
         rx="28"
-        stroke="#FF263E"
-        stroke-opacity="0.2"
-        stroke-width="6"
+        strokeWidth="6.925"
+        strokeOpacity="0.5"
       />
       <mask
         id="mask0_19_2578"

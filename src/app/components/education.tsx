@@ -24,8 +24,8 @@ function Education() {
         height="64.6333"
         rx="32.3167"
         stroke="#FF263E"
-        stroke-opacity="0.2"
-        stroke-width="6.925"
+        strokeOpacity="0.5"
+        strokeWidth="6.925"
       />
       <mask
         id="mask0_14_9080"

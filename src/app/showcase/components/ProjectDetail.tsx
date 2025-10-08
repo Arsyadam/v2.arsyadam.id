@@ -7,6 +7,38 @@ import { motion } from "framer-motion";
 import { Github, ExternalLink, ArrowLeft, Calendar, Tag } from "lucide-react";
 import { useState, useEffect } from "react";
 import MDEditor from "@uiw/react-md-editor";
+import GistEmbed from "../../components/GistEmbed";
+
+// Custom markdown renderer that supports GistEmbed
+function CustomMarkdownRenderer({ content }: { content: string }) {
+  // Replace <GistEmbed> tags with actual GistEmbed components
+  const renderContent = () => {
+    const gistRegex = /<GistEmbed gistUrl="([^"]*)" \/>/g;
+    const parts = content.split(gistRegex);
+
+    return parts.map((part, index) => {
+      // If this part is a gist URL (every odd index after split)
+      if (index % 2 === 1) {
+        return <GistEmbed key={index} gistUrl={part} />;
+      }
+
+      // Regular markdown content
+      return (
+        <MDEditor.Markdown
+          key={index}
+          source={part}
+          style={{
+            backgroundColor: "white",
+            color: "#333",
+            fontFamily: "Poppins, sans-serif",
+          }}
+        />
+      );
+    });
+  };
+
+  return <div>{renderContent()}</div>;
+}
 
 interface ProjectDetailProps {
   project: Showcase;
@@ -55,7 +87,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-40"></div>
             <Image
-              src={project.gif}
+              src={project.gif || project.image}
               alt={project.title}
               fill
               className="object-cover"
@@ -134,14 +166,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
           transition={{ duration: 0.5, delay: 0.5 }}
           data-color-mode="light"
         >
-          <MDEditor.Markdown
-            source={project.content}
-            style={{
-              backgroundColor: "white",
-              color: "#333",
-              fontFamily: "Poppins, sans-serif",
-            }}
-          />
+          <CustomMarkdownRenderer content={project.content} />
         </motion.div>
       </div>
     </div>

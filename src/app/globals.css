@@ -17,3 +17,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* GitHub Gist embed styles */
+.gist-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.gist-container .gist {
+  max-width: 100%;
+}
+
+.gist-container .gist .gist-file {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.loading-text {
+  display: none;
+}
+
+/* Hide loading text when gist is loaded */
+.gist-container:has(.gist) .loading-text {
+  display: none;
+}

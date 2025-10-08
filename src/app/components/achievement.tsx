@@ -24,8 +24,8 @@ function Achievement() {
         height="56"
         rx="28"
         stroke="#FACC15"
-        stroke-opacity="0.21"
-        stroke-width="6"
+        strokeOpacity="0.21"
+        strokeWidth="6"
       />
       <mask
         id="mask0_20_7177"
@@ -53,8 +53,8 @@ function Achievement() {
           y2="56"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="#FACC15" />
-          <stop offset="1" stop-color="#FFD57A" />
+          <stop stopColor="#FACC15" />
+          <stop offset="1" stopColor="#FFD57A" />
         </linearGradient>
       </defs>
     </svg>
