@@ -19,8 +19,59 @@ const code = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Arsyadam",
-  description: "Personal Portofolio Website",
+  title: {
+    default: "Arsyad Ali Mahardika | AI Engineer & Machine Learning Specialist",
+    template: "%s | Arsyad Ali Mahardika",
+  },
+  description:
+    "Arsyad Ali Mahardika (Arsyadam) - AI Engineer and Machine Learning Specialist with expertise in Deep Learning, Computer Vision, and NLP. Explore my portfolio of AI projects, research, and professional experience.",
+  keywords: [
+    "Arsyad Ali Mahardika",
+    "Arsyadam",
+    "AI Engineer",
+    "Machine Learning Engineer",
+    "Deep Learning",
+    "Computer Vision",
+    "Natural Language Processing",
+    "NLP",
+    "Data Science",
+    "Artificial Intelligence",
+    "Python Developer",
+    "TensorFlow",
+    "PyTorch",
+    "AI Portfolio",
+  ],
+  authors: [{ name: "Arsyad Ali Mahardika", url: "https://arsyadam.id" }],
+  creator: "Arsyad Ali Mahardika",
+  publisher: "Arsyad Ali Mahardika",
+  metadataBase: new URL("https://arsyadam.id"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://arsyadam.id",
+    title: "Arsyad Ali Mahardika | AI Engineer & Machine Learning Specialist",
+    description:
+      "AI Engineer and Machine Learning Specialist with expertise in Deep Learning, Computer Vision, and NLP. Explore my portfolio of AI projects and research.",
+    siteName: "Arsyad Ali Mahardika Portfolio",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Arsyad Ali Mahardika | AI Engineer & Machine Learning Specialist",
+    description:
+      "AI Engineer and Machine Learning Specialist with expertise in Deep Learning, Computer Vision, and NLP.",
+    creator: "@arsyadam",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({

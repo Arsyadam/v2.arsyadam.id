@@ -2,7 +2,11 @@
 import Parser from "rss-parser";
 
 export async function getBlogPosts() {
-  const parser = new Parser();
+  const parser = new Parser({
+    customFields: {
+      item: ["content:encoded"],
+    },
+  });
 
   try {
     // Replace this with the Medium RSS feed URL of your choice

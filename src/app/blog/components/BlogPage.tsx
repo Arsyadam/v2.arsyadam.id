@@ -11,10 +11,9 @@ interface BlogPost {
   creator: string;
   pubDate: string;
   slug: string;
-  link: string; // Added link field
+  link: string;
 }
 
-// Client component for search functionality
 export default function BlogPage({
   initialPosts = [],
 }: {
