@@ -1,9 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server"
-
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "https://chat.arsyadam.id/ollama"
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "deepseek-v2:latest"
-const OLLAMA_TIMEOUT_MS = 30000
-const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY || "sk-0a51fac465b74368a777e331a1b3b074";
+import { type NextRequest, NextResponse } from "next/server";
+import { generateText } from "ai";
 
 // Context about Arsyadam for the AI to reference
 const CONTEXT = `
@@ -37,181 +33,90 @@ Notable Projects:
 - Moklet.org: News Portal for SMK Telkom Malang organizations
 
 Answer questions about Arsyadam's experience, skills, projects, and background in a helpful and informative way. Keep responses concise but comprehensive. your pov as asistant is Arsyad Ali Mahardika when answer, use i am, me to point to arsyad ali mahardika
-`
+`;
 
 // Define types for better type safety
-interface OllamaResponse {
-  response: string
-  model: string
-  created_at: string
-  done: boolean
-}
-
-interface OllamaResult {
-  success: boolean
-  data?: OllamaResponse
-  error?: string
-}
-
 interface ApiResponse {
-  answer: string
-  timestamp: string
-  mode: "ollama" | "fallback"
-  model?: string
-  note?: string
-  error?: string
+  answer: string;
+  timestamp: string;
+  model: string;
 }
 
-// Fallback responses when Ollama is not available
-const FALLBACK_RESPONSES: Record<string, string> = {
-  achievements:
-    "Arsyadam has won multiple prestigious awards including 1st Place Gold Medal at FIKSI National Digital Technology Competition, 1st Place at IoT Competition (Mage ITS), and several other national competitions in AI, IoT, and data visualization.",
-  projects:
-    "Arsyadam's notable projects include 'Revive' - an AI & IoT-Based Textile Waste Management System that won the FIKSI competition, and 'Moklet.org' - a news portal for SMK Telkom Malang organizations.",
-  skills:
-    "Arsyadam specializes in AI & Machine Learning (TensorFlow, Computer Vision), IoT Development (Arduino, Raspberry Pi), Data Analytics, Web Development (React, Next.js), Python Programming, and React Native Mobile Development.",
-  education:
-    "Arsyadam is currently a student at SMK Telkom Malang studying Software Engineering (2023-Present) and completed Data Science training at Algoritma Data Science School (2022-2023).",
-  fiksi:
-    "FIKSI (Festival Inovasi dan Kewirausahaan Siswa Indonesia) is a national competition where Arsyadam won 1st Place Gold Medal for the 'Revive' project - an AI & IoT-Based Textile Waste Management System.",
-  default:
-    "I'm Arsyadam's AI assistant. While my full AI server is currently offline, I can tell you that Arsyadam is an award-winning AI & IoT developer from Malang, Indonesia, with multiple national competition wins including FIKSI Gold Medal. Feel free to ask about achievements, projects, skills, or education!",
+// Validate environment variables
+function validateEnv(): { apiKey: string; model: string } {
+  const apiKey = process.env.AI_GATEWAY_API_KEY;
+  const model = process.env.AI_MODEL;
+
+  if (!apiKey) {
+    throw new Error("AI_GATEWAY_API_KEY environment variable is not set");
+  }
+  if (!model) {
+    throw new Error("AI_MODEL environment variable is not set");
+  }
+
+  return { apiKey, model };
 }
 
-function getFallbackResponse(question: string): string {
-  const q = question.toLowerCase()
+async function queryAI(question: string): Promise<string> {
+  const { model } = validateEnv();
 
-  if (q.includes("achievement") || q.includes("award") || q.includes("competition") || q.includes("win")) {
-    return FALLBACK_RESPONSES.achievements
-  }
-  if (q.includes("project") || q.includes("revive") || q.includes("moklet")) {
-    return FALLBACK_RESPONSES.projects
-  }
-  if (
-    q.includes("skill") ||
-    q.includes("technology") ||
-    q.includes("programming") ||
-    q.includes("ai") ||
-    q.includes("iot")
-  ) {
-    return FALLBACK_RESPONSES.skills
-  }
-  if (q.includes("education") || q.includes("school") || q.includes("study")) {
-    return FALLBACK_RESPONSES.education
-  }
-  if (q.includes("fiksi")) {
-    return FALLBACK_RESPONSES.fiksi
-  }
+  const { text } = await generateText({
+    model: model,
+    system: CONTEXT,
+    prompt: `Question: ${question}\n\nProvide a clear, direct answer based on the context above. Keep it brief but complete. Use Markdown formatting with bold for emphasis.`,
+    maxTokens: 200,
+    temperature: 0.3,
+    topP: 0.9,
+  });
 
-  return FALLBACK_RESPONSES.default
-}
-
-async function queryOllama(question: string): Promise<OllamaResult> {
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS)
-
-    const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
-      method: "POST",
-      headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "Authorization": `Bearer ${OLLAMA_API_KEY}`, // Fixed to use the variable
-      },
-      body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      prompt: `${CONTEXT}\n\nQuestion: ${question}\n\nProvide a direct, concise answer (maximum 200 tokens). Format the answer using Markdown with headings, bold, italic, and emojis where appropriate. End with a complete thought:`,
-      stream: false,
-      options: {
-        temperature: 0.2,
-        top_p: 0.8,
-        num_predict: 200,
-        stop_sequences: [".", "!", "?"],
-        stop_on_eos: true
-      },
-      }),
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      throw new Error(`Ollama server returned ${response.status}`)
-    }
-
-    const data = await response.json() as OllamaResponse
-    return { success: true, data }
-  } catch (error) {
-    console.error("Error connecting to Ollama:", error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Unknown error connecting to Ollama" 
-    }
-  }
+  return text;
 }
 
 export async function POST(request: NextRequest) {
-  // Only validate API key in production environments
-  if (process.env.NODE_ENV === "production") {
-    if (!OLLAMA_API_KEY) {
-      return NextResponse.json({ error: "API key not set on server" }, { status: 500 });
-    }
-    const apiKey = request.headers.get("x-api-key");
-    if (apiKey !== OLLAMA_API_KEY) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-  // --- end API Key check ---
   try {
     // Parse request body
-    let body: { question?: string }
+    let body: { question?: string };
     try {
-      body = await request.json()
+      body = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
     }
 
-    const { question } = body
+    const { question } = body;
     if (!question || typeof question !== "string") {
-      return NextResponse.json({ error: "Question is required and must be a string" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Question is required and must be a string" },
+        { status: 400 }
+      );
     }
 
-    // Always try to connect to Ollama server first
-    console.log(`Attempting to connect to Ollama at: ${OLLAMA_BASE_URL}`)
-    const ollamaResult = await queryOllama(question)
+    // Query AI via Vercel Gateway
+    console.log(`Querying AI with question: ${question}`);
+    const answer = await queryAI(question);
 
-    if (ollamaResult.success && ollamaResult.data) {
-      const response: ApiResponse = {
-        answer: ollamaResult.data.response || "I couldn't generate a proper response.",
-        timestamp: new Date().toISOString(),
-        mode: "ollama",
-        model: OLLAMA_MODEL,
-      }
-      return NextResponse.json(response)
-    } else {
-      // If Ollama fails, use fallback
-      console.log("Ollama connection failed, using fallback response")
-      const fallbackAnswer = getFallbackResponse(question)
-
-      const response: ApiResponse = {
-        answer: fallbackAnswer,
-        timestamp: new Date().toISOString(),
-        mode: "fallback",
-        note: "Ollama server is currently unavailable. Using fallback response.",
-        error: ollamaResult.error
-      }
-      return NextResponse.json(response)
-    }
-  } catch (error) {
-    console.error("Unexpected error in ask-me API:", error)
-
-    // Even in case of unexpected errors, provide a fallback
+    const { model } = validateEnv();
     const response: ApiResponse = {
-      answer: FALLBACK_RESPONSES.default,
+      answer: answer || "I couldn't generate a proper response.",
       timestamp: new Date().toISOString(),
-      mode: "fallback",
-      error: "Unexpected error occurred",
-    }
-    return NextResponse.json(response)
+      model: model,
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Error in ask-me API:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate response",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }

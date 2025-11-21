@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import AskMeComponent from "./components/AskMeComponent";
-import ServerStatus from "./components/ServerStatus";
 export default function Home() {
   return (
     <>
@@ -145,12 +144,11 @@ export default function Home() {
                         Ask About Me
                       </h3>
                     </div>
-                    <ServerStatus />
                   </header>
 
                   <p className="text-gray-600 mb-4 text-start">
                     Curious about my achievements, projects, or skills? Ask my
-                    AI assistant powered by my personal Ollama server.
+                    AI assistant powered by a Gemini model.
                   </p>
 
                   <AskMeComponent />
