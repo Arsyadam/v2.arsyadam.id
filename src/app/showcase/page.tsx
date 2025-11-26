@@ -2,6 +2,19 @@
 import ProjectCard from "./components/ProjectCard";
 import MediaModal from "./components/MediaModal";
 import { Sparkles, Code } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Showcase - Project Portfolio AI & IoT",
+  description:
+    "Portfolio proyek AI, Machine Learning, IoT, dan Web Development oleh Arsyad Ali Mahardika. Termasuk Revive (Juara FIKSI Puspresnas), Moklet.org, dan proyek AI lainnya.",
+  openGraph: {
+    title: "Showcase - Project Portfolio Arsyad Ali Mahardika",
+    description:
+      "Portfolio proyek AI, Machine Learning, IoT, dan Web Development. Termasuk proyek pemenang FIKSI Puspresnas.",
+    type: "website",
+  },
+};
 
 export default async function ShowcasePage() {
   const projects = await getAllProjects();
@@ -19,7 +32,8 @@ export default async function ShowcasePage() {
     {
       type: "youtube" as const,
       id: "zsUvD1aUIYA",
-      title: "Hari Penentuan! Presentasi dan Pitching Besar - FIKSI Journey Ep.2",
+      title:
+        "Hari Penentuan! Presentasi dan Pitching Besar - FIKSI Journey Ep.2",
       description: "FIKSI Gold Medal winning project walkthrough",
       thumbnail: "https://img.youtube.com/vi/zsUvD1aUIYA/maxresdefault.jpg",
       duration: "25:45",
@@ -103,7 +117,8 @@ export default async function ShowcasePage() {
           Award-Winning Solutions
         </h3>
         <p className="text-slate-700 max-w-2xl mx-auto mb-8">
-          Explore my collection of innovative projects that have won national competitions
+          Explore my collection of innovative projects that have won national
+          competitions
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {validProjects.map((project) => {

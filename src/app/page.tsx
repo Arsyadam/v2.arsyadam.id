@@ -14,6 +14,22 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import AskMeComponent from "./components/AskMeComponent";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title:
+    "Arsyad Ali Mahardika - AI Engineer & Machine Learning Specialist | SMK Telkom Malang",
+  description:
+    "Portfolio Arsyad Ali Mahardika (Arsyadam), AI Engineer dari SMK Telkom Malang. Juara FIKSI Puspresnas, General Manager Metic Merch. Keahlian: AI, Machine Learning, IoT, Computer Vision, Data Science, Web Development.",
+  openGraph: {
+    title: "Arsyad Ali Mahardika - AI Engineer | SMK Telkom Malang",
+    description:
+      "Portfolio AI Engineer & Machine Learning Specialist. Juara FIKSI Puspresnas, General Manager Metic Merch.",
+    url: "https://arsyadam.id",
+    type: "profile",
+  },
+};
+
 export default function Home() {
   return (
     <>

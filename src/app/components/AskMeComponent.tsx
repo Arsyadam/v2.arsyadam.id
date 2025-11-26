@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Send, Loader2, Info } from "lucide-react";
 
@@ -14,11 +13,19 @@ interface ChatMessage {
   note?: string;
 }
 
+interface RateLimitInfo {
+  remaining: number;
+  limit: number;
+  resetTime: string;
+}
+
 export default function AskMeComponent() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setServerOnline] = useState(true);
+  const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
+  const [modelName, setModelName] = useState<string>("AI");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +55,7 @@ export default function AskMeComponent() {
         mode?: string;
         note?: string;
         error?: string;
+        model?: string;
       }
 
       // Safe response parser
@@ -66,6 +74,19 @@ export default function AskMeComponent() {
 
       const data = await safeParse(response);
 
+      // Update rate limit info from headers
+      const remaining = response.headers.get("X-RateLimit-Remaining");
+      const limit = response.headers.get("X-RateLimit-Limit");
+      const resetTime = response.headers.get("X-RateLimit-Reset");
+
+      if (remaining && limit && resetTime) {
+        setRateLimit({
+          remaining: parseInt(remaining),
+          limit: parseInt(limit),
+          resetTime: resetTime,
+        });
+      }
+
       if (!response.ok) {
         if (response.status === 503) setServerOnline(false);
         throw new Error(
@@ -83,6 +104,11 @@ export default function AskMeComponent() {
 
       setMessages((prev) => [...prev, assistantMessage]);
       setServerOnline(true);
+
+      // Extract and set model name from response
+      if (data.model) {
+        setModelName(data.model);
+      }
     } catch (error) {
       console.error("Error asking question:", error);
       const errorMessage: ChatMessage = {
@@ -201,17 +227,21 @@ export default function AskMeComponent() {
       )}
 
       {/* Info Banner */}
-      <div className="flex items-start mt-1 p-2 rounded-lg text-base ">
-        <div className="text-gray-500 text-md pr-3">Powered by:</div>
-        <div className="flex items-start gap-3">
-          <Image
-            src="/img/deepseekv2.png"
-            alt="DeepSeek logo"
-            width={300}
-            height={300}
-            className="h-6 w-32 object-contain"
-          />
+      <div className="flex items-center justify-between mt-1 p-2 rounded-lg text-base">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500 text-sm">Powered by</span>
+          <span className="font-[Fira_Code] text-sm font-medium bg-red-500/10 text-red-600 px-2 py-0.5 rounded">
+            {modelName}
+          </span>
         </div>
+        {rateLimit && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Info className="w-3 h-3" />
+            <span>
+              {rateLimit.remaining}/{rateLimit.limit} questions left
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

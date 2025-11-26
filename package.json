@@ -13,6 +13,7 @@
     "@ai-sdk/openai": "^2.0.71",
     "@uiw/react-md-editor": "^4.0.5",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "ai": "^5.0.97",
     "framer-motion": "^12.5.0",
     "fs": "^0.0.1-security",
