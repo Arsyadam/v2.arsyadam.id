@@ -86,22 +86,6 @@ export default async function ShowcasePage() {
       description: "Event dokumenter Bulan Bahasa",
       duration: "4:40",
     },
-    {
-      type: "instagram" as const,
-      id: "C-2xONcJNO3",
-      title: "Behind the scenes of FIKSI competition prep",
-      description: "Getting ready for the biggest competition of the year!",
-      thumbnail: "https://instagram.com/p/C-2xONcJNO3/media/?size=l",
-      url: "https://www.instagram.com/p/C-2xONcJNO3/",
-    },
-    {
-      type: "instagram" as const,
-      id: "C-5mKLpJcW2",
-      title: "Team collaboration moments",
-      description: "Working together to build something amazing",
-      thumbnail: "https://instagram.com/p/C-5mKLpJcW2/media/?size=l",
-      url: "https://www.instagram.com/p/C-5mKLpJcW2/",
-    },
   ];
 
   return (

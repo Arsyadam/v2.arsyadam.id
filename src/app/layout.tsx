@@ -6,6 +6,8 @@ import "./globals.css";
 import Navbar from "./components/navbar";
 import { Fira_Code } from "next/font/google";
 import Footer from "./components/footer";
+import CustomCursor from "./components/CustomCursor";
+import ScrollAnimations from "./components/ScrollAnimations";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -228,9 +230,14 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
-      <body className={`${poppins.className} ${code.variable} antialiased`}>
+      <body
+        className={`${poppins.className} ${code.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        <CustomCursor />
+        <ScrollAnimations />
         <Navbar />
-        {children}
+        <div className="page-transition">{children}</div>
         <Analytics />
         <SpeedInsights />
         <Footer />
