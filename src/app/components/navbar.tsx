@@ -1,191 +1,113 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { ArrowRight, Menu, X } from "lucide-react";
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/#experience", label: "Experience" },
+  { href: "/#showcase", label: "Projects" },
+  { href: "/#education", label: "Education" },
+  { href: "/#achievement", label: "Achievement" },
+  { href: "/#perspectives", label: "Perspectives" },
+  { href: "/contact", label: "Contact" },
+];
+
+function isActive(pathname: string | null, href: string) {
+  if (href === "/") return pathname === "/";
+  if (href.startsWith("/#")) return pathname === "/";
+  return pathname === href || (pathname?.startsWith(`${href}/`) ?? false);
+}
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  // Add scroll effect to navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   return (
-    <div className="fixed top-8 left-0 right-0 z-50 flex md:justify-center justify-left px-4">
+    <header className="fixed top-0 z-50 flex w-full flex-col items-center justify-center bg-white/90 backdrop-blur-[20px]">
       <nav
-        className={`backdrop-blur-md border-1 border-white bg-white/80 rounded-xl md:rounded-full shadow-sm  transition-all duration-300 ${
-          scrolled ? "py-4 px-5" : "py-5 px-6"
-        }  max-w-lg`}
+        aria-label="Primary"
+        className="flex h-16 w-full max-w-[1200px] items-center justify-between px-5 lg:px-10 xl:px-0 font-geist"
       >
-        <div className="flex items-center justify-between">
-          {/* Navigation in center - hidden on mobile */}
-          <div className="hidden md:block flex-grow text-center">
-            <ul className="inline-flex space-x-6 lg:space-x-8">
-              <li>
-                <Link
-                  href="/"
-                  className={` py-2 px-3 rounded-full ${
-                    scrolled ? "text-sm" : "text-lg"
-                  } font-medium transition-colors ${
-                    pathname === "/"
-                      ? "text-red-500"
-                      : "text-gray-700 hover:text-red-500"
-                  }`}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className={`py-2 px-3 rounded-full ${
-                    scrolled ? "text-sm" : "text-lg"
-                  } font-medium transition-colors ${
-                    pathname === "/blog" ||
-                    (pathname && pathname.startsWith("/blog/"))
-                      ? "text-red-500"
-                      : "text-gray-700 hover:text-red-500"
-                  }`}
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/showcase"
-                  className={`py-2 px-3 rounded-full ${
-                    scrolled ? "text-sm" : "text-lg"
-                  } font-medium transition-colors ${
-                    pathname === "/showcase"
-                      ? "text-red-500"
-                      : "text-gray-700 hover:text-red-500"
-                  }`}
-                >
-                  Showcase
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className={`py-2 px-3 rounded-full ${
-                    scrolled ? "text-sm" : "text-lg"
-                  } font-medium transition-colors ${
-                    pathname === "/contact"
-                      ? "text-red-500"
-                      : "text-gray-700 hover:text-red-500"
-                  }`}
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              type="button"
-              className="p-2 rounded-2xl text-gray-500 hover:bg-gray-100 focus:outline-none"
-              aria-controls="navbar-menu"
-              aria-expanded={isMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 17 14"
+        <div className="flex items-center gap-8">
+          <div className="hidden items-center gap-5 lg:flex">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`text-[14px] capitalize leading-none tracking-[-0.005em] transition-colors duration-200 ${
+                  isActive(pathname, href)
+                    ? "text-neutral-900"
+                    : "text-[#737373] hover:text-neutral-900"
+                }`}
               >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d={
-                    isMenuOpen
-                      ? "M1 1L16 13M1 13L16 1"
-                      : "M1 1h15M1 7h15M1 13h15"
-                  }
-                />
-              </svg>
-            </button>
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-2 border-t border-gray-100 pt-3">
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/"
-                  className={`block py-2 px-3 rounded-lg text-sm font-medium ${
-                    pathname === "/"
-                      ? "text-white bg-red-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className={`block py-2 px-3 rounded-lg text-sm font-medium ${
-                    pathname === "/blog" ||
-                    (pathname && pathname.startsWith("/blog/"))
-                      ? "text-white bg-red-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/showcase"
-                  className={`block py-2 px-3 rounded-lg text-sm font-medium ${
-                    pathname === "/showcase"
-                      ? "text-white bg-red-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Showcase
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className={`block py-2 px-3 rounded-lg text-sm font-medium ${
-                    pathname === "/contact"
-                      ? "text-white bg-red-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-        )}
+        <div className="hidden items-center gap-2 lg:flex">
+          <Link
+            href="/#showcase"
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-button-md bg-gradient-to-t from-neutral-900 to-neutral-600 px-2.5 py-2 text-[13px] font-medium leading-[18px] tracking-[-0.065px] text-white shadow-button transition-[filter,background-color,box-shadow] hover:from-neutral-950 hover:to-neutral-700 hover:shadow-button-hover active:brightness-95"
+          >
+            View Projects
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-button-md border border-neutral-200 bg-white px-2.5 py-2 text-[13px] font-medium leading-[18px] tracking-[-0.065px] text-neutral-800 shadow-button-secondary transition-colors hover:bg-neutral-100"
+          >
+            Contact
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2 lg:hidden">
+          <Link
+            href="/contact"
+            className="hidden h-8 items-center justify-center rounded-button-md border border-neutral-200 bg-white px-2.5 text-[13px] font-medium text-neutral-800 shadow-button-secondary sm:inline-flex"
+          >
+            Contact
+          </Link>
+          <button
+            type="button"
+            className="inline-flex size-8 items-center justify-center rounded-button-md text-neutral-800 hover:bg-neutral-100"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="size-5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
       </nav>
-    </div>
+
+      {isMenuOpen && (
+        <div className="w-full border-t border-neutral-100 bg-white/95 px-5 py-4 lg:hidden">
+          <ul className="flex flex-col gap-1">
+            {navLinks.map(({ href, label }) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className={`block rounded-lg px-3 py-2.5 text-[14px] font-medium ${
+                    isActive(pathname, href)
+                      ? "bg-neutral-100 text-neutral-900"
+                      : "text-neutral-600 hover:bg-neutral-50"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </header>
   );
 }

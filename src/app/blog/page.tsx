@@ -1,6 +1,8 @@
-import { getBlogPosts } from "./utils"; // Create this utility function
-import BlogPage from "./components/BlogPage"; // Import the client component
+import { getBlogPosts } from "./utils";
+import BlogPage from "./components/BlogPage";
 import { Metadata } from "next";
+import PageShell from "../components/PageShell";
+import PageSection from "../components/PageSection";
 
 export const metadata: Metadata = {
   title: "Blog - Arsyad Ali Mahardika",
@@ -13,10 +15,20 @@ export const metadata: Metadata = {
   },
 };
 
-// Revalidate every 3600 seconds (1 hour)
 export const revalidate = 3600;
 
 export default async function BlogPageWrapper() {
   const posts = await getBlogPosts();
-  return <BlogPage initialPosts={posts} />;
+
+  return (
+    <PageShell>
+      <PageSection
+        badge="Perspectives"
+        title="Writing & Perspectives"
+        description="Thoughts on AI, public transport technology, and lessons from building real-world systems."
+      >
+        <BlogPage initialPosts={posts} />
+      </PageSection>
+    </PageShell>
+  );
 }

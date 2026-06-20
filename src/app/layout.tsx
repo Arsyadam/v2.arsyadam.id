@@ -1,22 +1,18 @@
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Fraunces } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
-import { Fira_Code } from "next/font/google";
 import Footer from "./components/footer";
 import CustomCursor from "./components/CustomCursor";
 import ScrollAnimations from "./components/ScrollAnimations";
+import DownloadCvButton from "./components/DownloadCvButton";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const code = Fira_Code({
-  variable: "--font-code",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -213,7 +209,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="id">
+    <html lang="id" className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -231,12 +227,13 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${poppins.className} ${code.variable} antialiased`}
+        className={`${GeistSans.className} ${GeistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <CustomCursor />
         <ScrollAnimations />
         <Navbar />
+        <DownloadCvButton />
         <div className="page-transition">{children}</div>
         <Analytics />
         <SpeedInsights />

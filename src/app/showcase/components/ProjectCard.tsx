@@ -11,7 +11,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
   return (
     <Link href={`/showcase/${project.slug}`}>
       <div
-        className="rounded-2xl bg-slate-50 p-5 mb-3 mx-3 transition-all duration-300 hover:shadow-lg hover:scale-105"
+        className="rounded-2xl bg-white/90 p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-black/5"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >

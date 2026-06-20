@@ -8,14 +8,210 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-button-md: 10px;
+  --shadow-button: 0px 1px 2px 0px rgba(0, 0, 0, 0.05),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  --shadow-button-hover: 0px 2px 4px 0px rgba(0, 0, 0, 0.08),
+    0px 2px 6px 0px rgba(0, 0, 0, 0.12);
+  --shadow-button-secondary: 0px 1px 2px 0px rgba(0, 0, 0, 0.04);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-geist {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-fraunces {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+.shadow-button {
+  box-shadow: var(--shadow-button);
+}
+
+.shadow-button-hover:hover {
+  box-shadow: var(--shadow-button-hover);
+}
+
+.shadow-button-secondary {
+  box-shadow: var(--shadow-button-secondary);
+}
+
+.rounded-button-md {
+  border-radius: var(--radius-button-md);
+}
+
+.scrollbar-pill {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}
+
+.scrollbar-pill::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-pill::-webkit-scrollbar-thumb {
+  background-color: #d4d4d4;
+  border-radius: 9999px;
+}
+
+.hero-dot-grid {
+  background-image: radial-gradient(circle, #e5e5e5 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Hero text ambient blur — fades into page, no card edges */
+.hero-text-blur-ambient {
+  backdrop-filter: blur(28px) saturate(130%);
+  -webkit-backdrop-filter: blur(28px) saturate(130%);
+  background: rgba(250, 250, 250, 0.5);
+}
+
+.hero-text-blur-focus {
+  backdrop-filter: blur(52px) saturate(150%);
+  -webkit-backdrop-filter: blur(52px) saturate(150%);
+  background: rgba(250, 250, 250, 0.38);
+}
+
+.hero-text-blur-mask {
+  -webkit-mask-image: radial-gradient(
+    ellipse 120% 100% at 50% 42%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.82) 38%,
+    rgba(0, 0, 0, 0.45) 62%,
+    rgba(0, 0, 0, 0.12) 82%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 120% 100% at 50% 42%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.82) 38%,
+    rgba(0, 0, 0, 0.45) 62%,
+    rgba(0, 0, 0, 0.12) 82%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 1024px) {
+  .hero-text-blur-mask {
+    -webkit-mask-image: radial-gradient(
+      ellipse 115% 95% at 28% 42%,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.82) 38%,
+      rgba(0, 0, 0, 0.45) 62%,
+      rgba(0, 0, 0, 0.12) 82%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 115% 95% at 28% 42%,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.82) 38%,
+      rgba(0, 0, 0, 0.45) 62%,
+      rgba(0, 0, 0, 0.12) 82%,
+      transparent 100%
+    );
+  }
+}
+
+/* Legacy helpers — kept for other usages */
+
+.hero-text-blur-strong {
+  backdrop-filter: blur(44px);
+  -webkit-backdrop-filter: blur(44px);
+  -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.55) 58%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.45) 48%,
+      transparent 88%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.55) 58%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.45) 48%,
+      transparent 88%
+    );
+  mask-composite: intersect;
+}
+
+.hero-text-blur-soft {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.transit-map-layer {
+  isolation: isolate;
+}
+
+.transit-stop-ring {
+  animation: transit-pulse 2s ease-in-out infinite;
+}
+
+.transit-bus {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes transit-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.25;
+  }
+}
+
+/* Flowing dashes along decorative routes — unused; routes are solid lines */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transit-map-parallax {
+    transform: none !important;
+  }
+
+  .transit-bus,
+  .transit-stop-ring {
+    animation: none !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Custom Cursor Styles - Circle with transparent inside */

@@ -1,9 +1,11 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
-import { Send, Loader2, Info } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowUp, Loader2, Info } from "lucide-react";
+import MastraLogo from "./MastraLogo";
 
 interface ChatMessage {
   type: "user" | "assistant";
@@ -19,17 +21,130 @@ interface RateLimitInfo {
   resetTime: string;
 }
 
-export default function AskMeComponent() {
+interface AskMeComponentProps {
+  variant?: "default" | "hero";
+}
+
+const SUGGESTIONS = [
+  "What are your main achievements?",
+  "Tell me about the FIKSI competition",
+  "What technologies do you specialize in?",
+  "What projects have you worked on?",
+];
+
+const WELCOME_MESSAGE =
+  "Hi! I'm Arsyadam's AI assistant. Ask me about my experience, projects, achievements, or skills.";
+
+const BOOT_THINKING_MS = 1400;
+
+function formatMessage(content: string) {
+  return content
+    .replace(/\n/g, "<br/>")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code>$1</code>")
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-red-500 underline">$1</a>'
+    );
+}
+
+function AssistantAvatar() {
+  return (
+    <Image
+      src="/favicon.ico"
+      alt="Arsyadam"
+      width={28}
+      height={28}
+      className="size-7 shrink-0 rounded-full border border-neutral-200 object-cover"
+    />
+  );
+}
+
+function ThinkingBubble({ variant }: { variant: "hero" | "default" }) {
+  if (variant === "hero") {
+    return (
+      <div className="flex max-w-[85%] items-end gap-2">
+        <AssistantAvatar />
+        <div className="rounded-tl-[20px] rounded-tr-[20px] rounded-br-[20px] rounded-bl-[8px] border border-neutral-200 bg-neutral-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Loader2 className="size-4 animate-spin text-neutral-500" />
+            <span className="text-[14px] text-neutral-600">Thinking...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-start">
+      <div className="rounded-lg border bg-white p-3 text-gray-800">
+        <div className="flex items-center gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          <span className="text-sm">Thinking...</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PoweredByMastra({ compact }: { compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className={compact ? "text-[12px] text-neutral-500" : "text-sm text-gray-500"}>
+        Powered by
+      </span>
+      <Link
+        href="https://mastra.ai"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Mastra AI"
+        className="inline-flex items-center text-neutral-800 transition-opacity hover:opacity-80"
+      >
+        <MastraLogo className={compact ? "h-[13px] w-[5.25rem] md:h-[13px] md:w-[5.25rem]" : "h-[15px] w-[6rem] md:h-[15px] md:w-[6rem]"} />
+      </Link>
+    </div>
+  );
+}
+
+export default function AskMeComponent({
+  variant = "default",
+}: AskMeComponentProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isBootThinking, setIsBootThinking] = useState(true);
   const [, setServerOnline] = useState(true);
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
-  const [modelName, setModelName] = useState<string>("AI");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isHero = variant === "hero";
+  const hasUserMessages = messages.some((m) => m.type === "user");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMessages([
+        {
+          type: "assistant",
+          content: WELCOME_MESSAGE,
+          timestamp: new Date(),
+        },
+      ]);
+      setIsBootThinking(false);
+    }, BOOT_THINKING_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading, isBootThinking]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || isBootThinking) return;
 
     const userMessage: ChatMessage = {
       type: "user",
@@ -48,7 +163,6 @@ export default function AskMeComponent() {
         body: JSON.stringify({ question: userMessage.content }),
       });
 
-      // Define response type
       interface ParsedResponse {
         message?: string;
         answer?: string;
@@ -58,14 +172,13 @@ export default function AskMeComponent() {
         model?: string;
       }
 
-      // Safe response parser
       async function safeParse(res: Response): Promise<ParsedResponse> {
         const ct = res.headers.get("content-type") || "";
         if (ct.includes("application/json")) {
           try {
             return await res.json();
           } catch {
-            // Incorrect header — treat as text
+            // fall through
           }
         }
         const txt = await res.text();
@@ -74,7 +187,6 @@ export default function AskMeComponent() {
 
       const data = await safeParse(response);
 
-      // Update rate limit info from headers
       const remaining = response.headers.get("X-RateLimit-Remaining");
       const limit = response.headers.get("X-RateLimit-Limit");
       const resetTime = response.headers.get("X-RateLimit-Reset");
@@ -83,7 +195,7 @@ export default function AskMeComponent() {
         setRateLimit({
           remaining: parseInt(remaining),
           limit: parseInt(limit),
-          resetTime: resetTime,
+          resetTime,
         });
       }
 
@@ -104,11 +216,6 @@ export default function AskMeComponent() {
 
       setMessages((prev) => [...prev, assistantMessage]);
       setServerOnline(true);
-
-      // Extract and set model name from response
-      if (data.model) {
-        setModelName(data.model);
-      }
     } catch (error) {
       console.error("Error asking question:", error);
       const errorMessage: ChatMessage = {
@@ -125,100 +232,193 @@ export default function AskMeComponent() {
     }
   };
 
-  return (
-    <div className="space-y-4">
-      {/* Chat Messages */}
-      {messages.length > 0 && (
-        <div className="max-h-96 overflow-y-auto space-y-3 p-4 bg-gray-50 rounded-lg">
-          {messages.map((message, index) => (
+  const renderBubble = (message: ChatMessage, index: number) => {
+    const isUser = message.type === "user";
+
+    if (isHero) {
+      return (
+        <div
+          key={`${message.type}-${index}-${message.timestamp.getTime()}`}
+          className={
+            isUser
+              ? "ml-auto flex max-w-[85%] flex-col items-end"
+              : "flex max-w-[85%] items-end gap-2"
+          }
+        >
+          {!isUser && <AssistantAvatar />}
+          <div
+            className={
+              isUser
+                ? "rounded-tl-[20px] rounded-tr-[20px] rounded-br-[8px] rounded-bl-[20px] border border-neutral-200 bg-neutral-50 px-4 py-3"
+                : "rounded-tl-[20px] rounded-tr-[20px] rounded-br-[20px] rounded-bl-[8px] border border-neutral-200 bg-neutral-50 px-4 py-3"
+            }
+          >
             <div
-              key={index}
-              className={`flex ${
-                message.type === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[80%] p-3 rounded-lg ${
-                  message.type === "user"
-                    ? "bg-red-600 text-end text-white"
-                    : "bg-white text-start text-gray-800 border"
-                }`}
-              >
-                <div
-                  className="text-sm"
-                  dangerouslySetInnerHTML={{
-                    __html: message.content
-                      .replace(/\n/g, "<br/>")
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                      .replace(/`(.*?)`/g, "<code>$1</code>")
-                      .replace(
-                        /\[([^\]]+)\]\(([^)]+)\)/g,
-                        '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-red-500 underline">$1</a>'
-                      ),
-                  }}
-                />
-                {message.note && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
-                    <Info className="h-3 w-3" />
-                    <span>{message.note}</span>
-                  </div>
-                )}
-                <span className="text-xs opacity-70 mt-1 block">
-                  {message.timestamp.toLocaleTimeString()}
-                </span>
+              className="text-[14px] font-normal leading-5 text-neutral-800"
+              dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
+            />
+            {message.note && (
+              <div className="mt-2 flex items-center gap-1 text-xs text-neutral-500">
+                <Info className="size-3" />
+                <span>{message.note}</span>
               </div>
-            </div>
-          ))}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-white text-gray-800 border p-3 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Thinking...</span>
-                </div>
-              </div>
+            )}
+          </div>
+          {isUser && (
+            <span className="mt-1 text-[13px] font-medium leading-5 text-neutral-800">
+              You
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={`${message.type}-${index}-${message.timestamp.getTime()}`}
+        className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+      >
+        <div
+          className={`max-w-[80%] p-3 rounded-lg ${
+            isUser
+              ? "bg-red-600 text-end text-white"
+              : "bg-white text-start text-gray-800 border"
+          }`}
+        >
+          <div
+            className="text-sm"
+            dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
+          />
+          {message.note && (
+            <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+              <Info className="size-3" />
+              <span>{message.note}</span>
             </div>
           )}
         </div>
-      )}
+      </div>
+    );
+  };
 
-      {/* Input Form */}
+  if (isHero) {
+    return (
+      <div
+        className="flex h-[560px] w-full flex-col gap-2 rounded-[20px] border border-neutral-200 p-2"
+        style={{
+          background: "#FFFFFFCC",
+          boxShadow:
+            "0px 10px 10px -5px #0000000A, 0px 20px 25px -5px #00000014",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div
+            ref={scrollRef}
+            className="scrollbar-pill flex flex-1 flex-col gap-3 overflow-y-auto px-3 py-3"
+          >
+            {isBootThinking && <ThinkingBubble variant="hero" />}
+            {messages.map(renderBubble)}
+            {loading && <ThinkingBubble variant="hero" />}
+          </div>
+
+          {!hasUserMessages && !isBootThinking && (
+            <div className="flex flex-wrap gap-2 px-3 pb-2">
+              {SUGGESTIONS.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => setInput(suggestion)}
+                  className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-[12px] font-medium text-neutral-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 px-3 pb-3">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Chat with me..."
+              disabled={loading || isBootThinking}
+              className="h-[42px] flex-1 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 text-[14px] leading-5 text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300 disabled:cursor-not-allowed disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={loading || isBootThinking || !input.trim()}
+              aria-label="Send message"
+              className="flex size-[42px] shrink-0 items-center justify-center rounded-full border border-neutral-800 text-white disabled:opacity-40"
+              style={{
+                background: "linear-gradient(0deg, #000000 0%, #4B5563 100%)",
+              }}
+            >
+              {loading ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <ArrowUp className="size-5" aria-hidden="true" />
+              )}
+            </button>
+          </form>
+        </div>
+
+        <div className="flex items-center justify-between px-3 pb-1">
+          <PoweredByMastra compact />
+          {rateLimit && (
+            <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+              <Info className="size-3" />
+              <span>
+                {rateLimit.remaining}/{rateLimit.limit} left
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div
+        ref={scrollRef}
+        className="max-h-96 space-y-3 overflow-y-auto rounded-lg bg-gray-50 p-4"
+      >
+        {isBootThinking && <ThinkingBubble variant="default" />}
+        {messages.map(renderBubble)}
+        {loading && <ThinkingBubble variant="default" />}
+      </div>
+
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask me about my experience, projects, or skills..."
-          disabled={loading}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          disabled={loading || isBootThinking}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:bg-gray-100"
         />
         <button
           type="submit"
-          disabled={loading || !input.trim()}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={loading || isBootThinking || !input.trim()}
+          className="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
           ) : (
-            <Send className="h-4 w-4" />
+            <ArrowUp className="size-4" />
           )}
         </button>
       </form>
 
-      {/* Suggestions */}
-      {messages.length === 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {[
-            "What are your main achievements?",
-            "Tell me about the FIKSI competition",
-            "What technologies do you specialize in?",
-            "What projects have you worked on?",
-          ].map((suggestion, index) => (
+      {!hasUserMessages && !isBootThinking && (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {SUGGESTIONS.map((suggestion) => (
             <button
-              key={index}
+              key={suggestion}
+              type="button"
               onClick={() => setInput(suggestion)}
-              className="text-left p-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded border border-gray-200 hover:border-red-200 transition-colors"
+              className="rounded border border-gray-200 p-2 text-left text-sm text-gray-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
             >
               {suggestion}
             </button>
@@ -226,17 +426,11 @@ export default function AskMeComponent() {
         </div>
       )}
 
-      {/* Info Banner */}
-      <div className="flex items-center justify-between mt-1 p-2 rounded-lg text-base">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-500 text-sm">Powered by</span>
-          <span className="font-[Fira_Code] text-sm font-medium bg-red-500/10 text-red-600 px-2 py-0.5 rounded">
-            {modelName}
-          </span>
-        </div>
+      <div className="flex items-center justify-between rounded-lg p-2">
+        <PoweredByMastra />
         {rateLimit && (
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            <Info className="w-3 h-3" />
+            <Info className="size-3" />
             <span>
               {rateLimit.remaining}/{rateLimit.limit} questions left
             </span>

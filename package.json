@@ -17,6 +17,7 @@
     "ai": "^5.0.97",
     "framer-motion": "^12.5.0",
     "fs": "^0.0.1-security",
+    "geist": "^1.7.2",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.483.0",
     "marked": "^16.0.0",

@@ -1,157 +1,176 @@
-"use client";
-import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Calendar, ArrowRight } from "lucide-react";
+import PageShell from "../../components/PageShell";
+import PageSection from "../../components/PageSection";
 import {
   extractImageFromContent,
   getRecommendations,
   getAllPosts,
   getPostBySlug,
-} from "@/app/blog/components/PostData";
+} from "../components/PostData";
 
-type Post = {
-  guid: string;
-  categories?: string[];
-  pubDate: string;
-  title: string;
-  link: string;
-  content: string;
-  creator: string;
-  slug: string;
-};
+export async function generateStaticParams() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
-export default function Page() {
-  const params = useParams();
-  const { slug } = params;
-  const [postData, setPostData] = useState<Post | null>(null);
-  const [allPostsData, setAllPosts] = useState<Post[]>([]);
-  useEffect(() => {
-    if (slug) {
-      async function Fetching() {
-        const post = await getPostBySlug(slug);
-        const allPosts = await getAllPosts();
-        setPostData(post);
-        setAllPosts(allPosts);
-      }
-      Fetching();
-    }
-  }, [slug]);
-
-  if (!postData) {
-    notFound();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) {
+    return { title: "Post Not Found" };
   }
-  const recommendedPosts = getRecommendations(postData, allPostsData, 3);
+  return {
+    title: post.title,
+    description: post.content.replace(/<[^>]+>/g, "").slice(0, 160),
+    openGraph: {
+      title: post.title,
+      type: "article",
+    },
+  };
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
+
+  const allPosts = await getAllPosts();
+  const recommendedPosts = getRecommendations(post, allPosts, 3);
+  const imgSrc = extractImageFromContent(post.content);
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-25 md:mt-15">
-      <main className="max-w-3xl mx-auto">
-        <Link
-          href="/blog"
-          className="inline-block mb-6 text-red-600 hover:underline"
-        >
-          ← Back to all posts
-        </Link>
-        <article>
-          <header className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              {postData?.title}
-            </h1>
-            <div className="flex flex-col sm:flex-row sm:justify-between text-gray-600">
-              <div>By {postData?.creator}</div>
-              <div>
-                {new Date(postData?.pubDate).toLocaleDateString("en-US", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </div>
+    <PageShell>
+      <PageSection>
+        <article className="w-full max-w-[720px]">
+          <Link
+            href="/blog"
+            className="mb-8 inline-flex items-center gap-2 text-[14px] font-medium text-red-600 transition-colors hover:text-red-700"
+          >
+            <ArrowLeft className="size-4" />
+            Back to all articles
+          </Link>
+
+          <header className="mb-8 flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-2 text-[13px] text-neutral-500">
+              <Calendar className="size-3.5" />
+              <span>{formatDate(post.pubDate)}</span>
+              <span>·</span>
+              <span>By {post.creator}</span>
             </div>
-            {postData?.categories?.length ? (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {postData?.categories.map((category, i) => (
+
+            <h1 className="font-fraunces text-[32px] font-semibold leading-[110%] tracking-[-0.01em] text-neutral-800 md:text-[40px]">
+              {post.title}
+            </h1>
+
+            {post.categories && post.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {post.categories.map((category) => (
                   <span
-                    key={i}
-                    className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                    key={category}
+                    className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-[12px] font-medium text-neutral-700 shadow-button-secondary"
                   >
                     {category}
                   </span>
                 ))}
               </div>
-            ) : null}
-            {(() => {
-              const imgSrc = extractImageFromContent(postData?.content);
-              return imgSrc ? (
-                <div className="mt-4">
-                  <Image
-                    className="w-full h-96 object-cover rounded-xl"
-                    alt={postData?.title}
-                    src={imgSrc}
-                    width={1000}
-                    height={500}
-                    unoptimized
-                  />
-                </div>
-              ) : null;
-            })()}
+            )}
+
+            {imgSrc && (
+              <div className="relative mt-2 aspect-video overflow-hidden rounded-2xl border border-neutral-200">
+                <Image
+                  src={imgSrc}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  priority
+                />
+              </div>
+            )}
           </header>
 
           <div
-            className="prose prose-slate max-w-none mt-6 text-gray-500"
-            dangerouslySetInnerHTML={{ __html: postData?.content }}
+            className="prose prose-neutral max-w-none prose-headings:font-fraunces prose-headings:text-neutral-800 prose-a:text-red-600"
+            dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
-          {/* Recommended Reading */}
-          {recommendedPosts.length > 0 && (
-            <div className="mt-16 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold mb-6">Recommended Reading</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {recommendedPosts.map((recommendedPost) => {
-                  const imgSrc = extractImageFromContent(
-                    recommendedPost.content
-                  );
-                  return (
-                    <div key={recommendedPost.guid} className="flex flex-col">
-                      <Link href={`/blog/${recommendedPost.slug}`}>
-                        <div className="group">
-                          <div className="overflow-hidden rounded-lg mb-3 aspect-video">
-                            {imgSrc ? (
-                              <Image
-                                src={imgSrc}
-                                alt={recommendedPost.title}
-                                width={400}
-                                height={225}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                unoptimized
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <span className="text-gray-400">No image</span>
-                              </div>
-                            )}
-                          </div>
-                          <h3 className="font-semibold text-lg group-hover:text-red-600 transition-colors">
-                            {recommendedPost.title}
-                          </h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {new Date(
-                              recommendedPost.pubDate
-                            ).toLocaleDateString("en-US", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <div className="mt-10 border-t border-neutral-200 pt-8">
+            <a
+              href={post.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex h-9 items-center gap-2 rounded-[12px] bg-gradient-to-t from-neutral-900 to-neutral-600 px-4 text-[14px] font-medium text-white shadow-button transition-[filter,background-color,box-shadow] hover:from-neutral-950 hover:to-neutral-700"
+            >
+              Read on Medium
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          </div>
         </article>
-      </main>
-    </div>
+      </PageSection>
+
+      {recommendedPosts.length > 0 && (
+        <PageSection
+          badge="More"
+          title="Recommended Reading"
+          className="bg-white/75"
+        >
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recommendedPosts.map((recommendedPost) => {
+              const recImg = extractImageFromContent(recommendedPost.content);
+              return (
+                <Link
+                  key={recommendedPost.guid}
+                  href={`/blog/${recommendedPost.slug}`}
+                  className="group overflow-hidden rounded-xl border border-black/5 bg-white transition-shadow hover:shadow-md"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-neutral-100">
+                    {recImg ? (
+                      <Image
+                        src={recImg}
+                        alt={recommendedPost.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[13px] text-neutral-400">
+                        No preview
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <p className="mb-1 text-[12px] text-neutral-400">
+                      {formatDate(recommendedPost.pubDate)}
+                    </p>
+                    <h3 className="line-clamp-2 text-[15px] font-medium text-neutral-800 group-hover:text-red-700">
+                      {recommendedPost.title}
+                    </h3>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </PageSection>
+      )}
+    </PageShell>
   );
 }
