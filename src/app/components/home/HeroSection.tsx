@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BrainCircuit, Building2, Route } from "lucide-react";
 import AskMeComponent from "../AskMeComponent";
+import ButtonLink from "../ButtonLink";
 import HeroDownloadCvButton from "../HeroDownloadCvButton";
 import Reveal from "../Reveal";
 
@@ -91,9 +92,9 @@ export default function HeroSection() {
             >
               I build ML systems that make cities smarter — from predictive models
               at{" "}
-              <strong className="font-semibold text-neutral-800">
+              <ButtonLink href="/showcase/tara-ai-transjakarta" className="mx-0.5 align-middle">
                 Transjakarta
-              </strong>{" "}
+              </ButtonLink>{" "}
               to ITS prototypes that connect data, mobility, and urban
               infrastructure.
             </Reveal>

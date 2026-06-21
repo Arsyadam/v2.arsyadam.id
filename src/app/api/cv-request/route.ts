@@ -1,6 +1,8 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
+import {
+  buildCvEmailHtml,
+  buildCvEmailSubject,
+} from "../../lib/cv-email-template";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,6 +16,8 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.CV_FROM_EMAIL || "onboarding@resend.dev";
+    const cvUrl = process.env.CV_GDOCS_URL?.trim();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://arsyadam.id";
 
     if (!apiKey) {
       console.error("RESEND_API_KEY is not configured");
@@ -23,17 +27,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const cvFileName = process.env.CV_FILE_NAME || "Arsyadam-CV.pdf";
-    const cvPath = path.join(process.cwd(), "public", cvFileName);
-
-    let cvBase64: string;
-    try {
-      const buffer = await readFile(cvPath);
-      cvBase64 = buffer.toString("base64");
-    } catch {
-      console.error(`CV file not found at public/${cvFileName}`);
+    if (!cvUrl) {
+      console.error("CV_GDOCS_URL is not configured");
       return NextResponse.json(
-        { error: "CV file is not available yet. Please try again later." },
+        { error: "CV link is not available yet. Please try again later." },
         { status: 503 }
       );
     }
@@ -47,21 +44,8 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: `Arsyadam <${fromEmail}>`,
         to: [email.trim()],
-        subject: "CV - Arsyad Ali Mahardika (Arsyadam)",
-        html: `
-          <p>Hi,</p>
-          <p>Thank you for your interest! Please find my CV attached.</p>
-          <p>I'm an AI Engineer focused on <strong>AI &amp; IT in public transportation</strong>, currently building smart mobility solutions at Transjakarta.</p>
-          <p>Best regards,<br/><strong>Arsyad Ali Mahardika</strong><br/>
-          <a href="https://arsyadam.id">arsyadam.id</a> ·
-          <a href="https://linkedin.com/in/arsyadam">LinkedIn</a></p>
-        `,
-        attachments: [
-          {
-            filename: cvFileName,
-            content: cvBase64,
-          },
-        ],
+        subject: buildCvEmailSubject(),
+        html: buildCvEmailHtml({ cvUrl, siteUrl }),
       }),
     });
 

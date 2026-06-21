@@ -64,7 +64,7 @@ export default function CvDownloadDialog({ open, onClose }: CvDownloadDialogProp
       }
 
       setStatus("success");
-      setMessage("CV sent! Check your inbox (and spam folder).");
+      setMessage("Link sent! Check your inbox for the Google Docs CV link (and spam folder).");
     } catch {
       setStatus("error");
       setMessage("Network error. Please try again.");
@@ -101,10 +101,10 @@ export default function CvDownloadDialog({ open, onClose }: CvDownloadDialogProp
           </span>
           <div>
             <h2 id="cv-dialog-title" className="text-lg font-semibold text-neutral-900">
-              Download My CV
+              Get My CV
             </h2>
             <p className="text-sm text-neutral-500">
-              Enter your email and I&apos;ll send my CV to you.
+              Enter your email and I&apos;ll send you a link to view my CV on Google Docs.
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function CvDownloadDialog({ open, onClose }: CvDownloadDialogProp
               ) : (
                 <>
                   <Download className="size-4" />
-                  Send CV to my email
+                  Send CV link
                 </>
               )}
             </button>

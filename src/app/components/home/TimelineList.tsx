@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import ButtonLink from "../ButtonLink";
 import Reveal from "../Reveal";
 
 export type TimelineItem = {
@@ -22,28 +22,9 @@ function LearnMoreLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group inline-flex h-9 items-center rounded-full bg-red-50 px-3 text-sm font-semibold whitespace-nowrap text-red-600 transition-colors hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-    >
+    <ButtonLink href={href} external className="shrink-0">
       {children}
-      <svg
-        className="ml-3 overflow-visible text-red-300 transition-colors group-hover:text-red-400"
-        width="3"
-        height="6"
-        viewBox="0 0 3 6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M0 0L3 3L0 6" />
-      </svg>
-    </Link>
+    </ButtonLink>
   );
 }
 

@@ -5,6 +5,7 @@ import RouteBus from "./RouteBus";
 import {
   buildPageRoutes,
   getMapViewBox,
+  PERSPECTIVES_RAIL_X,
   SECTION_TITLE_Y_OFFSET,
   TRANSIT_RED,
   type PageRoute,
@@ -13,6 +14,19 @@ import { useLandingTransitLayout } from "./useLandingTransitLayout";
 import { getPointOnPath } from "./transit-routes";
 import { useTransitScroll } from "./useTransitScroll";
 import { MAP_WIDTH } from "./useLandingTransitLayout";
+import {
+  CONTACT_REVEAL_PROGRESS,
+  dispatchTransitBusProgress,
+  onPerspectivesFocus,
+  type PerspectivesFocusDetail,
+} from "../../../lib/transit-events";
+
+type Halte = {
+  pageY: number;
+  progress: number;
+  perspectiveIndex?: number;
+  skipIdlePause?: boolean;
+};
 
 type TransitMapBackgroundProps = {
   rootId?: string;
@@ -109,6 +123,8 @@ function setBusTransform(el: SVGGElement | null, x: number, y: number, scaleX: n
   el.setAttribute("transform", `translate(${x}, ${y}) scale(${scaleX}, 1)`);
 }
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
 export default function TransitMapBackground({
   rootId = "landing-page",
 }: TransitMapBackgroundProps) {
@@ -123,11 +139,19 @@ export default function TransitMapBackground({
   const [busElevated, setBusElevated] = useState(false);
 
   const sampleRef = useRef<PathSamples | null>(null);
-  const haltesRef = useRef<{ pageY: number; progress: number }[]>([]);
+  const haltesRef = useRef<Halte[]>([]);
+  const perspectivesFocusRef = useRef<PerspectivesFocusDetail | null>(null);
+  const railTopProgressRef = useRef(0);
+  const railBottomProgressRef = useRef(1);
+  const perspectivesScrollActiveRef = useRef(false);
   const targetProgress = useRef(0);
   const currentProgress = useRef(0);
   const elevatedRef = useRef(false);
   const animStartRef = useRef(0);
+  const scrollingRef = useRef(false);
+  const scrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTickRef = useRef(0);
+  const pauseUntilRef = useRef(0);
 
   const pageRoutes = useMemo(
     () => (layout ? buildPageRoutes(layout) : []),
@@ -165,13 +189,28 @@ export default function TransitMapBackground({
         root.querySelectorAll<HTMLElement>("[data-transit-halte]")
       );
 
-      const haltes = dots.map((dot) => {
+      const haltes: Halte[] = dots.map((dot) => {
         const r = dot.getBoundingClientRect();
         const centerX = r.left + r.width / 2;
         const pageY = r.top + window.scrollY - rootTop + r.height / 2;
         const vbX = ((centerX - rootLeft) / rootWidth) * MAP_WIDTH;
         return { pageY, progress: progressForPoint(sample, vbX, pageY) };
       });
+
+      // Rail endpoints (left vertical) of the perspectives segment along the spine.
+      const persp = layout.sections.perspectives;
+      if (persp) {
+        railTopProgressRef.current = progressForPoint(
+          sample,
+          PERSPECTIVES_RAIL_X,
+          persp.top + 140
+        );
+        railBottomProgressRef.current = progressForPoint(
+          sample,
+          PERSPECTIVES_RAIL_X,
+          persp.bottom - 140
+        );
+      }
 
       const ach = layout.sections.achievement;
       if (ach) {
@@ -181,16 +220,29 @@ export default function TransitMapBackground({
         haltes.push({
           pageY: y,
           progress: progressForPoint(sample, MAP_WIDTH * 0.87, y),
+          skipIdlePause: true,
         });
       }
-      const persp = layout.sections.perspectives;
+
+      const contact = layout.sections.contact;
       if (persp) {
-        const y =
-          layout.sectionTitleY?.perspectives ??
-          persp.top + SECTION_TITLE_Y_OFFSET;
         haltes.push({
-          pageY: y,
-          progress: progressForPoint(sample, MAP_WIDTH * 0.13, y),
+          pageY: persp.top + 280,
+          progress: railTopProgressRef.current,
+          skipIdlePause: true,
+        });
+        haltes.push({
+          pageY: persp.bottom - 160,
+          progress: railBottomProgressRef.current,
+          skipIdlePause: true,
+        });
+      }
+      if (contact) {
+        const connectY = contact.top + contact.height * 0.25;
+        haltes.push({
+          pageY: connectY,
+          progress: progressForPoint(sample, MAP_WIDTH * 0.5, connectY),
+          skipIdlePause: true,
         });
       }
 
@@ -205,16 +257,54 @@ export default function TransitMapBackground({
   }, [layout, rootId, pageRoutes]);
 
   useEffect(() => {
+    return onPerspectivesFocus((detail) => {
+      perspectivesFocusRef.current = detail;
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event("scroll"));
+      });
+    });
+  }, []);
+
+  useEffect(() => {
     if (!layout) return;
     const root = document.getElementById(rootId);
     if (!root) return;
 
+    const ach = layout.sections.achievement;
+    const persp = layout.sections.perspectives;
+
     const onScroll = () => {
       const haltes = haltesRef.current;
       if (haltes.length === 0) return;
+
       const rootTop = root.getBoundingClientRect().top + window.scrollY;
       const anchorY = window.scrollY + window.innerHeight * 0.36 - rootTop;
-      targetProgress.current = targetProgressFromHaltes(haltes, anchorY);
+      const pf = perspectivesFocusRef.current;
+
+      const inPerspectivesScroll =
+        !!pf?.inSection &&
+        pf.scrollProgress > 0.02 &&
+        pf.scrollProgress < 0.98 &&
+        !!persp &&
+        anchorY >= (ach?.bottom ?? persp.top) - 80;
+
+      perspectivesScrollActiveRef.current = inPerspectivesScroll;
+
+      if (inPerspectivesScroll) {
+        targetProgress.current = lerp(
+          railTopProgressRef.current,
+          railBottomProgressRef.current,
+          Math.min(Math.max(pf!.scrollProgress, 0), 1)
+        );
+      } else {
+        targetProgress.current = targetProgressFromHaltes(haltes, anchorY);
+      }
+
+      scrollingRef.current = true;
+      if (scrollIdleTimer.current) clearTimeout(scrollIdleTimer.current);
+      scrollIdleTimer.current = setTimeout(() => {
+        scrollingRef.current = false;
+      }, 260);
     };
 
     onScroll();
@@ -223,6 +313,7 @@ export default function TransitMapBackground({
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      if (scrollIdleTimer.current) clearTimeout(scrollIdleTimer.current);
     };
   }, [layout, rootId]);
 
@@ -255,23 +346,63 @@ export default function TransitMapBackground({
       const scaleX = busScaleXRef.current;
       const spine = pathRefs.current["spine-main"];
 
+      const dt = lastTickRef.current ? (now - lastTickRef.current) / 1000 : 0;
+      lastTickRef.current = now;
+
+      const pf = perspectivesFocusRef.current;
+
       if (spine) {
         const cur = currentProgress.current;
-        const diff = targetProgress.current - cur;
-        const speed = 0.09 + Math.min(Math.abs(diff) * 1.5, 0.28);
-        const next =
-          Math.abs(diff) < 0.00015 ? targetProgress.current : cur + diff * speed;
+        // While scrolling OR inside the perspectives section the bus tracks the
+        // scroll target; otherwise it drifts slowly and rests at dots.
+        const following =
+          scrollingRef.current || perspectivesScrollActiveRef.current;
+        let next: number;
+
+        if (following) {
+          pauseUntilRef.current = 0;
+          const diff = targetProgress.current - cur;
+          // Frame-rate independent smoothing — buttery, never janky.
+          const ease = 1 - Math.pow(0.0026, Math.min(dt, 0.05));
+          next =
+            Math.abs(diff) < 0.00008 ? targetProgress.current : lerp(cur, targetProgress.current, ease);
+        } else if (now < pauseUntilRef.current) {
+          next = cur;
+        } else {
+          const IDLE_DRIFT = 0.0045; // progress per second
+          const HALTE_PAUSE_MS = 3000;
+          next = cur + IDLE_DRIFT * Math.min(dt, 0.05);
+
+          for (const h of haltesRef.current) {
+            if (h.skipIdlePause) continue;
+            if (h.progress > 0.01 && cur < h.progress && next >= h.progress) {
+              next = h.progress;
+              pauseUntilRef.current = now + HALTE_PAUSE_MS;
+              break;
+            }
+          }
+
+          if (next >= 1) next = 0;
+        }
         currentProgress.current = next;
+
+        dispatchTransitBusProgress({
+          progress: next,
+          nearContact: next >= CONTACT_REVEAL_PROGRESS,
+        });
 
         const p = spine.getPointAtLength(next * spine.getTotalLength());
         setBusTransform(mainBusRef.current, p.x, p.y, scaleX);
 
+        // Lift the bus above content near dots (further down the page only).
         const threshold = elevatedRef.current ? 0.034 : 0.022;
         let nearHalte = false;
-        for (const h of haltesRef.current) {
-          if (Math.abs(next - h.progress) < threshold) {
-            nearHalte = true;
-            break;
+        if (next > 0.06 && !pf?.inSection) {
+          for (const h of haltesRef.current) {
+            if (h.progress > 0.01 && Math.abs(next - h.progress) < threshold) {
+              nearHalte = true;
+              break;
+            }
           }
         }
         if (nearHalte !== elevatedRef.current) {

@@ -9,6 +9,9 @@ import { MAP_WIDTH, type LandingLayout, type SectionBand } from "./useLandingTra
 /** Primary transit red — matches brand */
 export const TRANSIT_RED = "#d22129";
 
+/** X (viewBox units) of the left rail the bus rides through the Perspectives section. */
+export const PERSPECTIVES_RAIL_X = MAP_WIDTH * 0.06;
+
 export type PageRoute = {
   id: string;
   number: number;
@@ -179,26 +182,24 @@ function buildMainSpine(layout: LandingLayout): PathPoint[] {
     const xLeft = MAP_WIDTH * 0.13;
     const achTitleY =
       layout.sectionTitleY?.achievement ?? sectionTitleRowY(ach);
-    const perspTitleY = persp
-      ? layout.sectionTitleY?.perspectives ?? sectionTitleRowY(persp)
-      : ach.bottom + 48;
 
-    // One continuous loop — no backtracking:
-    // edu → ach title (horizontal) → down right → persp title (horizontal) → down left → contact
+    // edu → ach title (horizontal) → down right → under perspective cards → contact
     points.push({ x: xEdu, y: edu.bottom + 16 });
     points.push({ x: xLeft, y: achTitleY });
     points.push({ x: xRight, y: achTitleY });
     points.push({ x: xRight, y: ach.bottom - ach.height * 0.06 });
 
     if (persp) {
-      points.push({ x: xRight, y: perspTitleY });
-      points.push({ x: xLeft, y: perspTitleY });
-      points.push({ x: xLeft, y: persp.bottom - persp.height * 0.08 });
+      // One clean vertical rail on the far-left edge — the bus rides straight down
+      // it as you scroll the section. Never crosses the cards or the title.
+      points.push({ x: xRight, y: ach.bottom + 12 });
+      points.push({ x: PERSPECTIVES_RAIL_X, y: persp.top + 80 });
+      points.push({ x: PERSPECTIVES_RAIL_X, y: persp.bottom - 80 });
     }
 
     if (contact) {
       const connectY = contact.top + contact.height * 0.2;
-      points.push({ x: xLeft, y: contact.top + 12 });
+      points.push({ x: PERSPECTIVES_RAIL_X, y: contact.top + 12 });
       points.push({ x: MAP_WIDTH * 0.38, y: connectY });
       points.push({ x: MAP_WIDTH * 0.5, y: connectY });
     }
