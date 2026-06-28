@@ -4,7 +4,14 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import CvDownloadDialog from "./CvDownloadDialog";
 
-export default function DownloadCvButton() {
+type DownloadCvButtonProps = {
+  className?: string;
+};
+
+const defaultClassName =
+  "inline-flex h-8 items-center justify-center gap-1.5 rounded-button-md border border-red-200 bg-red-50 px-2.5 py-2 text-[13px] font-medium leading-[18px] tracking-[-0.065px] text-red-700 shadow-button-secondary transition-colors hover:bg-red-100";
+
+export default function DownloadCvButton({ className }: DownloadCvButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -12,9 +19,9 @@ export default function DownloadCvButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed right-4 top-[4.25rem] z-40 inline-flex h-9 items-center gap-2 rounded-full border border-red-200 bg-white/95 px-4 text-[13px] font-semibold text-red-700 shadow-button-secondary backdrop-blur-sm transition-colors hover:bg-red-50 md:right-6"
+        className={className ?? defaultClassName}
       >
-        <Download className="size-4" aria-hidden="true" />
+        <Download className="size-3.5" aria-hidden="true" />
         Download CV
       </button>
       <CvDownloadDialog open={open} onClose={() => setOpen(false)} />

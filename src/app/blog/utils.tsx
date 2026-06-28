@@ -1,39 +1,19 @@
-// utils.js or utils.tsx
-import Parser from "rss-parser";
+import { fetchMediumFeed, slugFromTitle } from "./medium-rss";
 
 export async function getBlogPosts() {
-  const parser = new Parser({
-    customFields: {
-      item: ["content:encoded"],
-    },
-  });
-
   try {
-    // Replace this with the Medium RSS feed URL of your choice
-    const feed = await parser.parseURL("https://medium.com/feed/@arsyadam");
+    const feed = await fetchMediumFeed();
 
-    const posts = feed.items.map((item) => {
-      // Create a slug from the title
-      const slug = item.title
-        ? item.title
-            .replace(/[^\w\s]/gi, "")
-            .replace(/\s+/g, "-")
-            .toLowerCase()
-        : "";
-
-      return {
-        title: item.title || "Untitled",
-        link: item.link || "",
-        content: item.content || item["content:encoded"] || "",
-        pubDate: item.pubDate || new Date().toISOString(),
-        creator: item.creator || "Unknown Author",
-        categories: item.categories || [],
-        guid: item.guid || item.link || "",
-        slug,
-      };
-    });
-
-    return posts;
+    return feed.items.map((item) => ({
+      title: item.title || "Untitled",
+      link: item.link || "",
+      content: item.content || item["content:encoded"] || "",
+      pubDate: item.pubDate || new Date().toISOString(),
+      creator: item.creator || "Unknown Author",
+      categories: item.categories || [],
+      guid: item.guid || item.link || "",
+      slug: slugFromTitle(item.title),
+    }));
   } catch (error) {
     console.error("Error fetching RSS feed:", error);
     return [];

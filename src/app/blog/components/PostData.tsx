@@ -1,4 +1,4 @@
-import Parser from "rss-parser";
+import { fetchMediumFeed, slugFromTitle } from "../medium-rss";
 
 type Post = {
   guid: string;
@@ -23,21 +23,10 @@ export async function generateStaticParams() {
 
 // @ts-expect-error: Prevent usage of `any` type
 export async function getPostBySlug(slug: uknown): Promise<Post | null> {
-  const parser = new Parser();
-
   try {
-    const feed = await parser.parseURL("https://medium.com/feed/@arsyadam");
+    const feed = await fetchMediumFeed();
 
-    const feedItem = feed.items.find((item) => {
-      const itemSlug = item.title
-        ? item.title
-            .replace(/[^\w\s]/gi, "")
-            .replace(/\s+/g, "-")
-            .toLowerCase()
-        : "";
-
-      return itemSlug === slug;
-    });
+    const feedItem = feed.items.find((item) => slugFromTitle(item.title) === slug);
 
     if (!feedItem) {
       return null;
@@ -61,30 +50,19 @@ export async function getPostBySlug(slug: uknown): Promise<Post | null> {
 
 // Helper: get all posts
 export async function getAllPosts(): Promise<Post[]> {
-  const parser = new Parser();
-
   try {
-    const feed = await parser.parseURL("https://medium.com/feed/@arsyadam");
+    const feed = await fetchMediumFeed();
 
-    return feed.items.map((item) => {
-      const slug = item.title
-        ? item.title
-            .replace(/[^\w\s]/gi, "")
-            .replace(/\s+/g, "-")
-            .toLowerCase()
-        : "";
-
-      return {
-        title: item.title || "Untitled",
-        link: item.link || "",
-        content: item.content || item["content:encoded"] || "",
-        pubDate: item.pubDate || new Date().toISOString(),
-        creator: item.creator || "Unknown Author",
-        categories: item.categories || [],
-        guid: item.guid || item.link || "",
-        slug,
-      };
-    });
+    return feed.items.map((item) => ({
+      title: item.title || "Untitled",
+      link: item.link || "",
+      content: item.content || item["content:encoded"] || "",
+      pubDate: item.pubDate || new Date().toISOString(),
+      creator: item.creator || "Unknown Author",
+      categories: item.categories || [],
+      guid: item.guid || item.link || "",
+      slug: slugFromTitle(item.title),
+    }));
   } catch (error) {
     console.error("Error fetching RSS feed:", error);
     return [];

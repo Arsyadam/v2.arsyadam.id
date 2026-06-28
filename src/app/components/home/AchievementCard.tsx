@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import CertificatePreview from "./CertificatePreview";
 
 export type AchievementItem = {
   organization: string;
@@ -13,7 +13,8 @@ export type AchievementItem = {
 export function driveCertificateThumbnail(url: string): string | null {
   const match = url.match(/\/d\/([^/]+)/);
   if (!match?.[1]) return null;
-  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  // Direct CDN URL — more reliable than drive.google.com/thumbnail redirects in browsers
+  return `https://lh3.googleusercontent.com/d/${match[1]}=w1000`;
 }
 
 export default function AchievementCard({ achievement }: { achievement: AchievementItem }) {
@@ -21,16 +22,7 @@ export default function AchievementCard({ achievement }: { achievement: Achievem
   const imageSrc = achievement.certificateImage;
 
   const imageBlock = imageSrc ? (
-    <div className="relative mb-3 aspect-[4/3] w-full overflow-hidden rounded-lg border border-black/5 bg-neutral-100">
-      <Image
-        src={imageSrc}
-        alt={`Certificate: ${achievement.title}`}
-        fill
-        className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        unoptimized
-      />
-    </div>
+    <CertificatePreview src={imageSrc} alt={`Certificate: ${achievement.title}`} />
   ) : (
     <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-transparent">
       <span className="px-4 text-center text-[12px] font-medium text-neutral-400">

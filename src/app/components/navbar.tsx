@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
+import DownloadCvButton from "./DownloadCvButton";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -56,6 +57,7 @@ export default function Navbar() {
           >
             View Projects
           </Link>
+          <DownloadCvButton />
           <Link
             href="/contact"
             className="inline-flex h-8 items-center justify-center gap-1.5 rounded-button-md border border-neutral-200 bg-white px-2.5 py-2 text-[13px] font-medium leading-[18px] tracking-[-0.065px] text-neutral-800 shadow-button-secondary transition-colors hover:bg-neutral-100"
@@ -66,6 +68,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <DownloadCvButton className="hidden h-8 items-center justify-center gap-1.5 rounded-button-md border border-red-200 bg-red-50 px-2.5 text-[13px] font-medium text-red-700 shadow-button-secondary sm:inline-flex" />
           <Link
             href="/contact"
             className="hidden h-8 items-center justify-center rounded-button-md border border-neutral-200 bg-white px-2.5 text-[13px] font-medium text-neutral-800 shadow-button-secondary sm:inline-flex"
@@ -105,6 +108,9 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
+            <li className="mt-2 border-t border-neutral-100 pt-2 lg:hidden">
+              <DownloadCvButton className="flex w-full h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-[14px] font-medium text-red-700" />
+            </li>
           </ul>
         </div>
       )}

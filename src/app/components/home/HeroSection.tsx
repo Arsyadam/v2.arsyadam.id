@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight, BrainCircuit, Building2, Route } from "lucide-react";
 import AskMeComponent from "../AskMeComponent";
 import ButtonLink from "../ButtonLink";
-import HeroDownloadCvButton from "../HeroDownloadCvButton";
 import Reveal from "../Reveal";
 
 const specialties = [
@@ -120,7 +119,6 @@ export default function HeroSection() {
               >
                 Contact Me
               </Link>
-              <HeroDownloadCvButton />
             </Reveal>
           </div>
         </div>

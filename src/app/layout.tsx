@@ -9,7 +9,6 @@ import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import CustomCursor from "./components/CustomCursor";
 import ScrollAnimations from "./components/ScrollAnimations";
-import DownloadCvButton from "./components/DownloadCvButton";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -233,7 +232,6 @@ export default function RootLayout({
         <CustomCursor />
         <ScrollAnimations />
         <Navbar />
-        <DownloadCvButton />
         <div className="page-transition">{children}</div>
         <Analytics />
         <SpeedInsights />

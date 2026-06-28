@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Mail,
   Phone,
-  MapPin,
   Send,
   Linkedin,
   Twitter,
@@ -85,15 +84,6 @@ export default function ContactContent() {
             </div>
           </div>
 
-          <div className="flex items-start gap-4">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
-              <MapPin className="size-4" />
-            </span>
-            <div>
-              <h3 className="text-[14px] font-medium text-neutral-800">Location</h3>
-              <p className="text-[14px] text-neutral-500">Malang, East Java, Indonesia</p>
-            </div>
-          </div>
         </div>
 
         <div className="mt-10">
@@ -201,18 +191,6 @@ export default function ContactContent() {
           </form>
         )}
       </div>
-    </div>
-
-    <div className="mt-8 overflow-hidden rounded-2xl border border-neutral-200 shadow-button-secondary">
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126438.28618013024!2d112.54938065622335!3d-7.978637204758963!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd62822063dc2fb%3A0x78879446481a4da2!2sMalang%2C%20Malang%20City%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1742722169793!5m2!1sen!2sid"
-        width="100%"
-        height="360"
-        style={{ border: 0 }}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        title="Malang location map"
-      />
     </div>
   </div>
   );

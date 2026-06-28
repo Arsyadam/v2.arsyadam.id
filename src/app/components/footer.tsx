@@ -44,7 +44,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="max-w-xs text-[14px] leading-[150%] tracking-[-0.005em] text-neutral-500">
-              AI Engineer building meaningful technology from Malang, Indonesia.
+              AI Engineer building meaningful technology.
             </p>
           </div>
 
